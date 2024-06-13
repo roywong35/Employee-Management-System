@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Management System</title>
+<link rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+
+<!-- Additional CSS for custom styling -->
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    h1 {
+        margin-top: 20px;
+        font-size: 2rem;
+    }
+    .container {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-group.row {
+        margin-bottom: 15px;
+    }
+    .form-control {
+        margin-top: 5px;
+    }
+    .btn {
+        font-size: 0.875rem;
+        padding: 5px 10px;
+    }
+    .btn-primary,
+    .btn-danger {
+        margin-right: 10px;
+    }
+    .btn-outline-danger {
+        margin-left: 10px;
+    }
+    .form-check-inline {
+        margin-right: 10px;
+    }
+</style>
+
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">基本情報登録</h1>
+        <hr>
+
+        <form action="#" th:action="@{/saveEmployee}" th:object="${employee}" method="POST">
+            <div class="form-group row">
+                <label for="id" class="col-sm-2 col-form-label">社員ID</label>
+                <div class="col-sm-10">
+                    <input type="text" id="id" th:field="*{id}" placeholder="（自動生成）" class="form-control" readonly>
+                </div>
+            </div>
+
+			<div class="form-group row">
+				<label for="joiningDate" class="col-sm-2 col-form-label">入社年月日</label>
+				<div class="col-sm-10">
+					<input type="date" id="joiningDate1"
+						th:id="${#ids.next('joiningDate')}" th:name="joiningDate"
+						th:value="${formattedJoiningDate}" class="form-control" required
+						min="minDateStringJoining" max="maxDateStringJoining">
+				</div>
+			</div>
+
+			<div class="form-group row">
+                <label for="name" class="col-sm-2 col-form-label">氏名</label>
+                <div class="col-sm-10">
+                    <input type="text" id="name" th:field="*{name}" class="form-control" maxlength="20" required>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">性別</label>
+                <div class="col-sm-10">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" th:field="*{gender}" value="男" id="genderMale">
+                        <label class="form-check-label" for="genderMale">男</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" th:field="*{gender}" value="女" id="genderFemale">
+                        <label class="form-check-label" for="genderFemale">女</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" th:field="*{gender}" value="不明" id="genderUnknown">
+                        <label class="form-check-label" for="genderUnknown">不明</label>
+                    </div>
+                </div>
+            </div>
+
+			<div class="form-group row">
+				<label for="birthDate" class="col-sm-2 col-form-label">生年月日</label>
+				<div class="col-sm-10">
+					<input type="date" id="birthDate1" th:id="${#ids.next('birthDate')}"
+						th:name="birthDate" th:value="${formattedBirthDate}"
+						class="form-control" required min="${minDateStringBirth}"
+						max="${maxDateStringBirth}">
+				</div>
+			</div>	
+
+			<div class="form-group row">
+                <label for="department" class="col-sm-2 col-form-label">所属</label>
+                <div class="col-sm-10">
+                    <select id="department" th:field="*{department}" class="form-control" required>
+                        <option value="">-- 部署を選択してください --</option>
+                        <option value="総務部">総務部</option>
+                        <option value="人事部">人事部</option>
+                        <option value="販売部">販売部</option>
+                        <option value="マーケティング部">マーケティング部</option>
+                        <option value="品質管理部">品質管理部</option>
+                        <option value="技術開発部">技術開発部</option>
+                        <option value="企画部">企画部</option>
+                        <option value="顧客サービス部">顧客サービス部</option>
+                        <option value="ロジスティクス部">ロジスティクス部</option>
+                        <option value="会計部">会計部</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="email" class="col-sm-2 col-form-label">メールアドレス</label>
+                <div class="col-sm-10">
+                    <input type="email" id="email" th:field="*{email}" class="form-control" maxlength="50" required>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <div class="col-sm-10 offset-sm-2">
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-info flex-grow-1" th:text="${employee.id == null ? '登録' : '更新'}">登録</button>
+                        <a th:href="@{/}" class="btn btn-outline-danger flex-grow-1 ml-2">閉じる</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+    // Calculate current date
+    var currentDate = new Date();
+
+    // Calculate minimum date for birthDate (100 years ago)
+    var minDateBirth = new Date();
+    minDateBirth.setFullYear(currentDate.getFullYear() - 100);
+
+    // Calculate maximum date for birthDate (18 years ago)
+    var maxDateBirth = new Date();
+    maxDateBirth.setFullYear(currentDate.getFullYear() - 18);
+
+    // Calculate minimum date for joiningDate (1 year ago)
+    var minDateJoining = new Date();
+    minDateJoining.setFullYear(currentDate.getFullYear() - 1);
+
+    // Calculate maximum date for joiningDate (1 year from now)
+    var maxDateJoining = new Date();
+    maxDateJoining.setFullYear(currentDate.getFullYear() + 1);
+
+    // Format min and max dates for birthDate as YYYY-MM-DD
+    var minDateStringBirth = minDateBirth.toISOString().slice(0, 10);
+    var maxDateStringBirth = maxDateBirth.toISOString().slice(0, 10);
+
+    // Format min and max dates for joiningDate as YYYY-MM-DD
+    var minDateStringJoining = minDateJoining.toISOString().slice(0, 10);
+    var maxDateStringJoining = maxDateJoining.toISOString().slice(0, 10);
+
+    // Apply min and max dates to the birthDate input field
+    document.getElementById('birthDate1').setAttribute('min', minDateStringBirth);
+    document.getElementById('birthDate1').setAttribute('max', maxDateStringBirth);
+
+    // Apply min and max dates to the joiningDate input field
+    document.getElementById('joiningDate1').setAttribute('min', minDateStringJoining);
+    document.getElementById('joiningDate1').setAttribute('max', maxDateStringJoining);
+</script>
+
+</body>
+</html>

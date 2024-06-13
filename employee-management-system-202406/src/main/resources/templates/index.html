@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Management System</title>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .table th, .table td {
+        vertical-align: middle;
+        text-align: center;
+    }
+    .table th {
+        background-color: #007bff;
+        color: #fff;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #007bff;
+    }
+    .mb-3, .my-2 {
+        margin-bottom: 1rem !important;
+    }
+    .d-flex .btn {
+        flex-grow: 1;
+    }
+    .ml-2 {
+        margin-left: 0.5rem;
+    }
+    .btn-small {
+    font-size: 0.875rem;
+    padding: 5px 10px;
+    margin: 2px;
+    width: auto;
+}
+    
+</style>
+</head>
+<body>
+
+    <div class="container my-2">
+        <h1>社員情報一覧</h1>
+        <hr>
+
+        <!-- Log Out button with margin -->
+        <div class="mb-3" style="text-align: right;">
+            <a th:href="@{/logout}" class="btn btn-outline-danger">閉じる</a>
+        </div>
+
+		<!-- Buttons for adding and deleting employees -->
+		<div class="d-flex justify-content-end align-items-center mb-3">
+			<a th:href="@{/showNewEmployeeForm}" class="btn btn-primary mr-2">追加</a>
+			<button class="btn btn-danger" onclick="deleteSelected()">削除</button>
+		</div>
+
+		<!-- Search input fields -->
+        <div class="mb-3">
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="searchId">社員ID</label>
+                        <input type="text" id="searchId" class="form-control" placeholder="社員ID" oninput="search()">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="searchJoiningDateFrom">入社年月日 From</label>
+                        <input type="date" id="searchJoiningDateFrom" class="form-control" placeholder="入社年月日 From" oninput="search()">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="searchJoiningDateTo">入社年月日 To</label>
+                        <input type="date" id="searchJoiningDateTo" class="form-control" placeholder="入社年月日 To" oninput="search()">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="searchDepartment">所属</label>
+                        <select id="searchDepartment" class="form-control" onchange="search()">
+                            <option value="">--- 部署 ---</option>
+                            <option value="総務部">総務部</option>
+                            <option value="人事部">人事部</option>
+                            <option value="販売部">販売部</option>
+                            <option value="マーケティング部">マーケティング部</option>
+                            <option value="品質管理部">品質管理部</option>
+                            <option value="技術開発部">技術開発部</option>
+                            <option value="企画部">企画部</option>
+                            <option value="顧客サービス部">顧客サービス部</option>
+                            <option value="ロジスティクス部">ロジスティクス部</option>
+                            <option value="会計部">会計部</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <table border="1" class="table table-striped table-responsive-md">
+            <thead>
+                <tr>
+                    <th class="text-center">選択</th>
+                    <th class="text-center">社員ID</th>
+                    <th class="text-center">入社年月日</th>
+                    <th class="text-center">氏名</th>
+                    <th class="text-center">性別</th>
+                    <th class="text-center">生年月日</th>
+                    <th class="text-center">年齢</th>
+                    <th class="text-center">所属</th>
+                    <th class="text-center">メールアドレス</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr th:each="employee : ${listEmployees}" th:id="'employeeRow' + ${employee.id}">
+                    <td>
+                        <input type="checkbox" name="selectedIds" th:value="${employee.id}">
+                    </td>
+                    <td>
+                        <a th:href="@{/showNewEmployeeForm(id=${employee.id})}" th:text="${employee.id}" style="text-decoration: underline;"></a>
+                    </td>
+                    <td th:text="${employee.joiningDate}"></td>
+                    <td th:text="${employee.name}"></td>
+                    <td th:text="${employee.gender}"></td>
+                    <td th:text="${employee.birthDate}"></td>
+                    <td th:text="${employee.age}"></td>
+                    <td th:text="${employee.department}"></td>
+                    <td th:text="${employee.email}"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${totalPages > 1}">
+            <div class="row col-sm-10">
+                <div class="col-sm-2">
+                    Total Rows: [[${totalItems}]] 
+                </div>
+                <div class="col-sm-1">
+                    <span th:each="i: ${#numbers.sequence(1, totalPages)}">
+                        <a th:if="${currentPage != i}" th:href="@{'/page/' + ${i}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">[[${i}]]</a>
+                        <span th:unless="${currentPage != i}">[[${i}]]</span>  &nbsp; &nbsp;
+                    </span>
+                </div>
+                <div class="col-sm-1">
+                    <a th:if="${currentPage < totalPages}" th:href="@{'/page/' + ${currentPage + 1}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">Next</a>
+                    <span th:unless="${currentPage < totalPages}">Next</span>
+                </div>
+                <div class="col-sm-1">
+                    <a th:if="${currentPage < totalPages}" th:href="@{'/page/' + ${totalPages}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">Last</a>
+                    <span th:unless="${currentPage < totalPages}">Last</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function deleteSelected() {
+            var selectedIds = [];
+            var checkboxes = document.querySelectorAll('input[name="selectedIds"]:checked');
+            
+            if (checkboxes.length === 0) {
+                alert("Please select at least one employee to delete.");
+                return;
+            }
+
+            checkboxes.forEach(function(checkbox) {
+                selectedIds.push(checkbox.value);
+            });
+
+            selectedIds.forEach(function(id) {
+                fetch('/deleteEmployee/' + id, {
+                    method: 'GET',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Employee deleted successfully:', id);
+                        document.getElementById('employeeRow' + id).remove();
+                    } else {
+                        console.error('Failed to delete employee:', id);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error while deleting employee:', error);
+                });
+            });
+        }
+
+        function search() {
+            var searchId = document.getElementById('searchId').value.trim().toLowerCase();
+            var searchJoiningDateFrom = document.getElementById('searchJoiningDateFrom').value.trim();
+            var searchJoiningDateTo = document.getElementById('searchJoiningDateTo').value.trim();
+            var searchDepartment = document.getElementById('searchDepartment').value.trim().toLowerCase();
+
+            var rows = document.querySelectorAll('tbody tr');
+
+            rows.forEach(function (row) {
+                var id = row.querySelector('td:nth-child(2)').innerText.trim().toLowerCase();
+                var joiningDate = row.querySelector('td:nth-child(3)').innerText.trim();
+                var department = row.querySelector('td:nth-child(8)').innerText.trim().toLowerCase();
+
+                var idMatch = id.includes(searchId);
+                var joiningDateMatch = isDateInRange(joiningDate, searchJoiningDateFrom, searchJoiningDateTo);
+                var departmentMatch = department.includes(searchDepartment);
+
+                if ((searchJoiningDateFrom === '' && searchJoiningDateTo === '') || joiningDateMatch) {
+                    if (idMatch && departmentMatch) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } else {
+                    if (idMatch && joiningDateMatch && departmentMatch) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function isDateInRange(dateString, fromDate, toDate) {
+            var date = new Date(dateString);
+            var fromDateObj = new Date(fromDate);
+            var toDateObj = new Date(toDate);
+
+            return date >= fromDateObj && date <= toDateObj;
+        }
+    </script>
+</body>
+</html>
